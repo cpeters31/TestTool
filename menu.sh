@@ -9,7 +9,7 @@ echo "0. List connected device information"
 echo "1. List all MAG and Kozakura installed apps"
 echo "2. Capture log for a specific app"
 echo "3. Capture log for a specific app"
-echo "4. Perform another task"
+echo "4. Open Logging script"
 echo "5. List MAG games and ask to uninstall or not"
 echo "6. List MAG games and prompt to uninstall"
 
@@ -61,8 +61,10 @@ case $choice in
     echo "Log captured for $packageName. Check "$logName".log"
     ;;
   4)
-    echo "Performing another task..."
+    echo "Opening the logging script..."
     # Add your custom task here
+    source Logcapture/logcapture.sh
+    echo "Closed logging for now"
     ;;
   5)
    # List all apps with "test" in their package names
