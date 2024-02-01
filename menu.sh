@@ -5,8 +5,8 @@
 #./menu.sh
 
 echo "Choose a task:"
-echo "0. List all MAG and Kozakura installed apps"
-echo "1. List all installed apps"
+echo "0. List connected device information"
+echo "1. List all MAG and Kozakura installed apps"
 echo "2. Capture log for a specific app"
 echo "3. Capture log for a specific app"
 echo "4. Perform another task"
@@ -17,12 +17,37 @@ read -p "Enter your choice (0/1/2/3/4/5/6): " choice
 
 case $choice in
   0)
-    echo "Listing all MAG installed apps:"
-    adb shell pm list packages | grep "maginteractive\|kozakura" 
+    echo "Listing information on connected devices"
+
+    get_readable_name() {
+    case $1 in
+        "SM-A136U1") echo "Galaxy A13 5G";;
+        # Add more cases as needed
+        *) echo "Unknown Device";;
+    esac
+    }
+
+    devices=$(adb devices | grep -v "List" | awk '{print $1}')
+    for device in $devices; do
+    model=$(adb -s $device shell getprop ro.product.model)
+    readable_name=$(get_readable_name "$model")
+
+    echo "Device: $device"
+    echo "  Model: $model"
+
+    # Display the readable name only if it is known
+    if [ "$readable_name" != "Unknown Device" ]; then
+        echo "  Model Name: $readable_name"
+    fi
+    echo "  Manufacturer: $(adb -s $device shell getprop ro.product.manufacturer)"
+    echo "  Android Version: $(adb -s $device shell getprop ro.build.version.release)"
+    echo "  Screen Resolution: $(adb -s $device shell wm size)"
+    echo "---"
+    done
     ;;
   1)
-    echo "Listing all installed apps:"
-    adb shell pm list packages
+    echo "Listing all MAG installed apps:"
+    adb shell pm list packages | grep "maginteractive\|kozakura" 
     ;;
   2)
     read -p "Enter the package name of the app: " packageName
