@@ -55,14 +55,37 @@ case $choice in
     echo "Log captured for $packageName. Check logcat.log"
     ;;
   3)
-    read -p "Enter the package name of the app: " packageName
-    read -p "Name of log: " logName
-    adb logcat "*:W" | grep "$packageName" > /Users/chrispeters/Downloads/"$logName".log
-    echo "Log captured for $packageName. Check "$logName".log"
+    cleanup() {
+      
+    echo -e "\nLogs captured for $packageName. Check "${logName}_${current_datetime}".log"
+    # Terminate the background process
+    kill "$adb_pid"
+    exit 1
+    }
+
+    trap cleanup SIGINT
+
+    # Log capture asking players for a search term and logname, appending the datetime to the logname
+    read -p "Enter search term: " packageName
+    read -p "Log file name: " logName
+    current_datetime=$(date +"%Y%m%d_%H%M%S")
+
+    # Log the command at the top of the file
+    echo "Command: adb logcat \"*:W\" | grep \"$packageName\" > \"/Users/chrispeters/Downloads/${logName}_${current_datetime}.log\"" > "/Users/chrispeters/Downloads/${logName}_${current_datetime}.log"
+
+    # Run adb logcat in the background and capture its process ID
+    adb logcat "*:W" | grep "$packageName" >> "/Users/chrispeters/Downloads/${logName}_${current_datetime}.log" 2>&1 &
+    adb_pid=$!
+
+    # Wait for the background process to finish
+    wait "$adb_pid"
+
+    echo "Logs captured for $packageName. Check ${logName}_${current_datetime}.log"
     ;;
   4)
+    clear
     echo "Opening the logging script..."
-    # Add your custom task here
+    # Run logging shell script
     source Logcapture/logcapture.sh
     echo "Closed logging for now"
     ;;
@@ -120,5 +143,6 @@ case $choice in
     ;;
   *)
     echo "Not a valid menu choice. Exiting."
+    clear
     ;;
 esac
