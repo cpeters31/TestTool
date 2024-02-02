@@ -12,6 +12,7 @@ echo "3. Capture log for a specific app"
 echo "4. Open Logging script"
 echo "5. List MAG games and ask to uninstall or not"
 echo "6. List MAG games and prompt to uninstall"
+echo "7. Record the phone screen for devices that don't have screen recording"
 
 read -p "Enter your choice (0/1/2/3/4/5/6): " choice
 
@@ -91,7 +92,7 @@ case $choice in
     ;;
   5)
    # List all apps with "test" in their package names
-   echo "Listing all Test installed apps:"
+   echo "Listing all MAG installed games:"
    adb shell pm list packages | grep "maginteractive"
 
    # Populate the packages array from the output of adb shell pm list packages
@@ -140,6 +141,13 @@ case $choice in
           echo "Skipping $package uninstallation."
         fi
     done
+    ;;
+  7)
+    #for devices that don't have screen recording built it
+    #record the screen and save to file on device using filename and date time
+    current_datetime=$(date +"%Y%m%d_%H%M%S")
+    read -p "Save the recording as: " logName
+    adb shell screenrecord /mnt/sdcard/Download/${logName}_${current_datetime}.mp4
     ;;
   *)
     echo "Not a valid menu choice. Exiting."
