@@ -8,13 +8,13 @@ echo "Choose a task:"
 echo "0. List connected device information"
 echo "1. List all MAG and Kozakura installed apps"
 echo "2. Capture log for a specific app"
-echo "3. Capture log for a specific app"
+echo "3. Capture log for a specific app and search term"
 echo "4. Open Logging script"
 echo "5. List MAG games and ask to uninstall or not"
 echo "6. List MAG games and prompt to uninstall"
 echo "7. Record the phone screen for devices that don't have screen recording"
 
-read -p "Enter your choice (0/1/2/3/4/5/6): " choice
+read -p "Enter your choice (0/1/2/3/4/5/6/7): " choice
 
 case $choice in
   0)
@@ -43,13 +43,33 @@ case $choice in
     echo "  Manufacturer: $(adb -s $device shell getprop ro.product.manufacturer)"
     echo "  Android Version: $(adb -s $device shell getprop ro.build.version.release)"
     echo "  Screen Resolution: $(adb -s $device shell wm size)"
+    echo "  Screen Density: $(adb -s $device shell wm density)"
+    echo "  Total free memory: $(adb -s $device shell df | awk '/\/data/ { total += $4 } END { print "" total / 1024 / 1024 " MB" }')"
     echo "---"
     done
     ;;
   1)
-    echo "Listing all MAG installed apps:"
-    adb shell pm list packages | grep "maginteractive\|kozakura" 
+    #echo "Listing all MAG installed apps:"
+    #adb shell pm list packages | grep "maginteractive\|kozakura" 
+    #done
+    #;;
+    # # List all packages containing "maginteractive" or "kozakura"
+    packages=$(adb shell pm list packages | grep -E "maginteractive|kozakura")
+
+    # Count the number of packages
+    num_packages=$(echo "$packages" | wc -l)
+    echo "Installed games: "$num_packages
+
+    # Loop through each package and retrieve its version
+    for ((i = 1; i <= num_packages; i++)); do
+    package=$(echo "$packages" | sed -n "${i}p")
+    package_name=$(echo "$package" | cut -d ":" -f 2)
+    version=$(adb shell dumpsys package "$package_name" | grep "versionName" | cut -d "=" -f 2)
+    echo "Package: $package_name"
+    echo "Version: $version"
+    done
     ;;
+  
   2)
     read -p "Enter the package name of the app: " packageName
     adb logcat "*:W" | grep "$packageName" > logcat.log
@@ -81,7 +101,7 @@ case $choice in
     # Wait for the background process to finish
     wait "$adb_pid"
 
-    echo "Logs captured for $packageName. Check ${logName}_${current_datetime}.log"
+    echo "Logs captured for $packageName. Check /Users/chrispeters/Downloads/${logName}_${current_datetime}.log"
     ;;
   4)
     clear
