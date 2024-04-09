@@ -25,7 +25,8 @@ show_menu() {
   echo "5. List MAG games and ask to uninstall or not"
   echo "6. List MAG games and prompt to uninstall"
   echo "7. Record the phone screen for devices that don't have screen recording"
-  echo "8. Exit"
+  echo "8. Mimic a device resolution and denisty for testing"
+  echo "9. Exit"
 }
 
 #Function to add command to the logfile
@@ -63,7 +64,7 @@ cleanup() {
 while true; do
 show_menu
 
-read -p "Enter your choice (0/1/2/3/4/5/6/7/8): " choice
+read -p "Enter your choice (0/1/2/3/4/5/6/7/8/9): " choice
 
 case $choice in
   0)
@@ -225,10 +226,24 @@ case $choice in
     adb shell screenrecord /mnt/sdcard/Download/${logName}_${current_datetime}.mp4
     read -p "Press Enter to continue..."
     ;;
-  8)
+  9)
     read -p "Exiting... press enter to continue"
     exit 1
     ;;
+  8)
+  # Alter a device's resolution and density to fake another device resolution
+    echo "Enter a resolution and density you would like to mimic"
+    read -p "Enter the height " height
+    read -p "Enter the width " width
+    adb shell wm size ${width}x${height}
+    echo "Applying the resolution ${width}x${height}"
+    read -p "Enter the density " density
+    adb shell wm density ${density}
+    echo "Applying the density ${density}"
+    
+    read -p "When ready press Enter to reset..."
+    adb shell wm reset
+  ;;
   *)
     echo "Not a valid menu choice."
     read -p "Press Enter to continue..."
